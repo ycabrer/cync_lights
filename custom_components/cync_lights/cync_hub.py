@@ -169,7 +169,7 @@ class CyncHub:
                                 while len(packet) > 24:
                                     wut_id = int(packet[0])
                                     _LOGGER.debug('Init chunk %s %s %s', switch_id, home_id, wut_id)
-                                    deviceID = self.home_devices[home_id].get(wut_id)
+                                    deviceID = switch_id # self.home_devices[home_id][wut_id]
                                     if deviceID in self.cync_switches:
                                         if self.cync_switches[deviceID].elements > 1:
                                             for i in range(self.cync_switches[deviceID].elements):
