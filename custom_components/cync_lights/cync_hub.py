@@ -87,7 +87,7 @@ class CyncHub:
                     except Exception as e:
                         self.reader, self.writer = await asyncio.open_connection('cm.gelighting.com', 23778)
             except Exception as e:
-                _LOGGER.error(str(type(e).__name__) + ": " + str(e))
+                _LOGGER.exception(e)
                 await asyncio.sleep(5)
             else:
                 read_tcp_messages = asyncio.create_task(self._read_tcp_messages(), name = "Read TCP Messages")
@@ -103,7 +103,7 @@ class CyncHub:
                         try:
                             result = task.result()
                         except Exception as e:
-                            _LOGGER.error(str(type(e).__name__) + ": " + str(e))
+                            _LOGGER.exception(e)
                     for task in pending:
                         task.cancel()
                     if not self.shutting_down:
@@ -112,7 +112,7 @@ class CyncHub:
                     else:
                         _LOGGER.debug("Cync client shutting down")
                 except Exception as e:
-                    _LOGGER.error(str(type(e).__name__) + ": " + str(e))
+                    _LOGGER.exception(e)
 
     async def _read_tcp_messages(self):
         self.writer.write(self.login_code)
@@ -228,7 +228,7 @@ class CyncHub:
                             if command_received is not None:
                                 command_received(seq)
                 except Exception as e:
-                    _LOGGER.error(str(type(e).__name__) + ": " + str(e))
+                    _LOGGER.exception(e)
                 data = data[packet_length+5:]
         raise ShuttingDown
 
