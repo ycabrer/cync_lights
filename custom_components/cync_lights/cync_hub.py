@@ -131,6 +131,7 @@ class CyncHub:
                 packet = data[5:packet_length+5]
                 try:
                     if packet_length == len(packet):
+                        _LOGGER.debug("Packet %s home_devices %s cync_switches %s", packet, self.home_devices, self.cync_switches)
                         if packet_type == 115:
                             switch_id = str(struct.unpack(">I", packet[0:4])[0])
                             home_id = self.switchID_to_homeID[switch_id]
