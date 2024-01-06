@@ -128,10 +128,13 @@ class CyncHub:
             while len(data) >= 12:
                 packet_type = int(data[0])
                 packet_length = struct.unpack(">I", data[1:5])[0]
+                _LOGGER.debug('Examining packet type %d length %d', packet_type, packet_length)
                 packet = data[5:packet_length+5]
                 try:
-                    if packet_length == len(packet):
-                        _LOGGER.debug("Packet %s home_devices %s cync_switches %s", packet, self.home_devices, self.cync_switches)
+                    if packet_length != len(packet):
+                        _LOGGER.warning('Skipping corruped packet, %d is not %d', packet_length, len(packet))
+                    else:
+                        _LOGGER.debug("Packet parsing: %s home_devices %s cync_switches %s", packet, self.home_devices, self.cync_switches)
                         if packet_type == 115:
                             switch_id = str(struct.unpack(">I", packet[0:4])[0])
                             home_id = self.switchID_to_homeID[switch_id]
@@ -164,6 +167,7 @@ class CyncHub:
                                 self._add_connected_devices(switch_id, home_id)
                                 packet = packet[22:]
                                 while len(packet) > 24:
+                                    _LOGGER.debug('Stuffing %s %s %s', switch_id, home_id, int(packet[0]))
                                     deviceID = self.home_devices[home_id][int(packet[0])]
                                     if deviceID in self.cync_switches:
                                         if self.cync_switches[deviceID].elements > 1:
@@ -230,7 +234,7 @@ class CyncHub:
                             if command_received is not None:
                                 command_received(seq)
                 except Exception as e:
-                    _LOGGER.exception(e)
+                    _LOGGER.error("Failsafe during packet", exc_info=e)
                 data = data[packet_length+5:]
         raise ShuttingDown
 
