@@ -31,7 +31,6 @@ Capabilities = {
 class CyncHub:
 
     def __init__(self, user_data, options, remove_options_update_listener):
-
         self.thread = None
         self.loop = None
         self.reader = None
@@ -80,14 +79,16 @@ class CyncHub:
                 try:
                     self.reader, self.writer = await asyncio.open_connection('cm.gelighting.com', 23779, ssl = context)
                 except Exception as e:
+                    _LOGGER.warning("Connection problem, disabling SSL verification", exc_info=e)
                     context.check_hostname = False
                     context.verify_mode = ssl.CERT_NONE
                     try:
                         self.reader, self.writer = await asyncio.open_connection('cm.gelighting.com', 23779, ssl = context)
                     except Exception as e:
+                        _LOGGER.warning("Connection problem, attempting alternate port", exc_info=e)
                         self.reader, self.writer = await asyncio.open_connection('cm.gelighting.com', 23778)
             except Exception as e:
-                _LOGGER.exception(e)
+                _LOGGER.warning('Failed to connect, waiting before retry.', exc_info=e)
                 await asyncio.sleep(5)
             else:
                 read_tcp_messages = asyncio.create_task(self._read_tcp_messages(), name = "Read TCP Messages")
@@ -96,7 +97,7 @@ class CyncHub:
                 update_connected_devices = asyncio.create_task(self._update_connected_devices(), name = "Update Connected Devices")
                 read_write_tasks = [read_tcp_messages, maintain_connection, update_state, update_connected_devices]
                 try:
-                    done, pending = await asyncio.wait(read_write_tasks,return_when=asyncio.FIRST_EXCEPTION)
+                    done, pending = await asyncio.wait(read_write_tasks, return_when=asyncio.FIRST_EXCEPTION)
                     for task in done:
                         name = task.get_name()
                         exception = task.exception()
