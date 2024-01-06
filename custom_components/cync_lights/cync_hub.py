@@ -797,9 +797,10 @@ class CyncUserData:
                         if (len(room.get('deviceIDArray',[])) + len(room.get('subgroupIDArray',[]))) > 0:
                             room_id = home_id + '-' + str(room['groupID'])
                             room_controller = home_controllers[home_id][0]
-                            available_room_controllers = [(id%1000) + (int(id/1000)*256) for id in room.get('deviceIDArray',[]) if 'switch_controller' in devices[home_devices[home_id][(id%1000)+(int(id/1000)*256)]]]
-                            if len(available_room_controllers) > 0:
-                                room_controller = devices[home_devices[home_id][available_room_controllers[0]]]['switch_controller']
+                            # TODO auto-find a better controller?
+                            # available_room_controllers = [(id%1000) + (int(id/1000)*256) for id in room.get('deviceIDArray',[]) if 'switch_controller' in devices[home_devices[home_id][(id%1000)+(int(id/1000)*256)]]]
+                            # if len(available_room_controllers) > 0:
+                            #     room_controller = devices[home_devices[home_id][available_room_controllers[0]]]['switch_controller']
                             for id in room.get('deviceIDArray',[]):
                                 id = (id % 1000) + (int(id / 1000)*256)
                                 devices[home_devices[home_id][id]]['room'] = room_id
