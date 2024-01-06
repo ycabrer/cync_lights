@@ -824,6 +824,7 @@ class CyncUserData:
         async with aiohttp.ClientSession() as session:
             async with session.get(API_DEVICES.format(user=self.user_credentials['user_id']), headers=headers) as resp:
                 response  = await resp.json()
+                _LOGGER.debug("_get_homes() resp %s", response)
                 return response
 
     async def _get_home_properties(self, product_id, device_id):
@@ -832,6 +833,7 @@ class CyncUserData:
         async with aiohttp.ClientSession() as session:
             async with session.get(API_DEVICE_INFO.format(product_id=product_id, device_id=device_id), headers=headers) as resp:
                 response = await resp.json()
+                _LOGGER.debug("_get_home_properties() resp %s", response)
                 return response
 
 class LostConnection(Exception):
