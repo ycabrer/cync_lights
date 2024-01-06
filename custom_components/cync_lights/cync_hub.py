@@ -167,8 +167,9 @@ class CyncHub:
                                 self._add_connected_devices(switch_id, home_id)
                                 packet = packet[22:]
                                 while len(packet) > 24:
-                                    _LOGGER.debug('Stuffing %s %s %s', switch_id, home_id, int(packet[0]))
-                                    deviceID = self.home_devices[home_id][int(packet[0])]
+                                    wut_id = int(packet[0])
+                                    _LOGGER.debug('Init chunk %s %s %s', switch_id, home_id, wut_id)
+                                    deviceID = self.home_devices[home_id].get(wut_id)
                                     if deviceID in self.cync_switches:
                                         if self.cync_switches[deviceID].elements > 1:
                                             for i in range(self.cync_switches[deviceID].elements):
@@ -233,6 +234,8 @@ class CyncHub:
                             command_received = self.pending_commands.get(seq,None)
                             if command_received is not None:
                                 command_received(seq)
+                        else:
+                            _LOGGER.info("Ignoring packet of type %d", packet_type)
                 except Exception as e:
                     _LOGGER.error("Failsafe during packet", exc_info=e)
                 data = data[packet_length+5:]
@@ -246,7 +249,8 @@ class CyncHub:
             await self.writer.drain()
         raise ShuttingDown
 
-    def _add_connected_devices(self,switch_id, home_id):
+    def _add_connected_devices(self, switch_id, home_id):
+        _LOGGER.debug("_add_connected_devices(%s, %s)", switch_id, home_id)
         for dev in self.switchID_to_deviceIDs[switch_id]:
             #update list of WiFi connected devices
             if dev not in self.connected_devices[home_id]:
