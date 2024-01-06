@@ -29,6 +29,7 @@ async def cync_login(hub, user_input: dict[str, Any]) -> dict[str, Any]:
     """Validate the user input"""
 
     response = await hub.authenticate(user_input["username"], user_input["password"])
+    _LOGGER.debug("cync_login() resp %s", response)
     if response['authorized']:
         return {'title':'cync_lights_'+ user_input['username'],'data':{'cync_credentials': hub.auth_code, 'user_input':user_input}}
     else:
@@ -41,6 +42,7 @@ async def submit_two_factor_code(hub, user_input: dict[str, Any]) -> dict[str, A
     """Validate the two factor code"""
 
     response = await hub.auth_two_factor(user_input["two_factor_code"])
+    _LOGGER.debug("submit_two_factor_code() resp %s", response)
     if response['authorized']:
         return {'title':'cync_lights_'+ hub.username,'data':{'cync_credentials': hub.auth_code, 'user_input': {'username':hub.username,'password':hub.password}}}
     else:
@@ -75,7 +77,7 @@ class CyncConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         except InvalidAuth:
             errors["base"] = "invalid_auth"
         except Exception as e:  # pylint: disable=broad-except
-            _LOGGER.exception(e)
+            _LOGGER.exception("Unexpected exception during auth", exc_info=e)
             errors["base"] = "unknown"
         else:
             self.data = info
