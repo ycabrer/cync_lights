@@ -76,7 +76,7 @@ class CyncConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         except InvalidAuth:
             errors["base"] = "invalid_auth"
         except Exception as e:  # pylint: disable=broad-except
-            _LOGGER.warning("Unexpected exception during auth", exc_info=e)
+            _LOGGER.warning("Unexpected exception from login", exc_info=e)
             errors["base"] = "unknown"
         else:
             self.data = info
@@ -102,7 +102,7 @@ class CyncConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         except InvalidAuth:
             errors["base"] = "invalid_auth"
         except Exception as e:  # pylint: disable=broad-except
-            _LOGGER.warning("Unexpected exception two-factor", exc_info=e)
+            _LOGGER.warning("Unexpected exception from two-factor", exc_info=e)
             errors["base"] = "unknown"
         else:
             self.data = info
