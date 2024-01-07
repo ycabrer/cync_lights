@@ -71,13 +71,12 @@ class CyncConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
         try:
             info = await cync_login(self.cync_hub, user_input)
-            info["data"]["cync_config"] = await self.cync_hub.get_cync_config()
         except TwoFactorCodeRequired:
             return await self.async_step_two_factor_code()
         except InvalidAuth:
             errors["base"] = "invalid_auth"
         except Exception as e:  # pylint: disable=broad-except
-            _LOGGER.exception("Unexpected exception during auth", exc_info=e)
+            _LOGGER.warning("Unexpected exception during auth", exc_info=e)
             errors["base"] = "unknown"
         else:
             self.data = info
@@ -100,11 +99,10 @@ class CyncConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
         try:
             info = await submit_two_factor_code(self.cync_hub, user_input)
-            info["data"]["cync_config"] = await self.cync_hub.get_cync_config()
         except InvalidAuth:
             errors["base"] = "invalid_auth"
         except Exception as e:  # pylint: disable=broad-except
-            _LOGGER.exception(e)
+            _LOGGER.warning("Unexpected exception during auth", exc_info=e)
             errors["base"] = "unknown"
         else:
             self.data = info
@@ -123,6 +121,7 @@ class CyncConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             self.options = user_input
             return await self._async_finish_setup()
 
+        self.data["data"]["cync_config"] = await self.cync_hub.get_cync_config()
         switches_data_schema = vol.Schema(
             {
                 vol.Optional(
