@@ -132,7 +132,7 @@ class CyncHub:
                 packet = data[5:packet_length+5]
                 try:
                     if packet_length != len(packet):
-                        _LOGGER.warning('Skipping corruped packet, %d is not %d', packet_length, len(packet))
+                        _LOGGER.warning('Skipping corrupted packet, %d is not %d', packet_length, len(packet))
                     else:
                         _LOGGER.debug("Packet parsing: %s home_devices %s cync_switches %s", packet, self.home_devices, self.cync_switches)
                         if packet_type == 115:
@@ -757,7 +757,7 @@ class CyncUserData:
             if home_info.get('groupsArray',False) and home_info.get('bulbsArray',False) and len(home_info['groupsArray']) > 0 and len(home_info['bulbsArray']) > 0:
                 home_id = str(home['id'])
                 bulbs_array_length = max([((device['deviceID'] % home['id']) % 1000) + (int((device['deviceID'] % home['id']) / 1000)*256) for device in home_info['bulbsArray']]) + 1
-                home_devices[home_id] = [""]*(bulbs_array_length)
+                home_devices[home_id] = {} # [""]*(bulbs_array_length)
                 home_controllers[home_id] = []
                 for device in home_info['bulbsArray']:
                     device_type = device['deviceType']
