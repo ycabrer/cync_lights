@@ -422,6 +422,9 @@ class CyncHub:
         [room.initialize() for room in self.cync_rooms.values() if room.is_subgroup]
         [room.initialize() for room in self.cync_rooms.values() if not room.is_subgroup]
 
+    # Other methods remain unchanged
+
+
     def start_tcp_client(self):
         self.thread = threading.Thread(target=self._start_tcp_client, daemon=True)
         self.thread.start()
