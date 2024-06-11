@@ -6,14 +6,14 @@ from homeassistant.core import HomeAssistant
 from .const import DOMAIN
 from .cync_hub import CyncHub
 
-PLATFORMS: list[str] = ["light","binary_sensor","switch","fan"]
+PLATFORMS: list[str] = ["light", "binary_sensor", "switch", "fan"]
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Cync Room Lights from a config entry."""
 
     hass.data.setdefault(DOMAIN, {})
     remove_options_update_listener = entry.add_update_listener(options_update_listener)
-    hub = CyncHub(entry.data, entry.options, remove_options_update_listener)
+    hub = CyncHub(hass, entry.data, entry.options, remove_options_update_listener)
     hass.data[DOMAIN][entry.entry_id] = hub
     hub.start_tcp_client()
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
@@ -21,7 +21,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     return True
 
 async def options_update_listener(
-    hass: HomeAssistant, config_entry: config_entries.ConfigEntry
+    hass: HomeAssistant, config_entry: ConfigEntry
 ):
     """Handle options update."""
     await hass.config_entries.async_reload(config_entry.entry_id)
