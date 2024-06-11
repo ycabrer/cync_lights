@@ -362,7 +362,8 @@ Capabilities = {
 
 
 class CyncHub:
-    def __init__(self, user_data, options, remove_options_update_listener):
+    def __init__(self, hass, user_data, options, remove_options_update_listener):
+        self.hass = hass
         self.thread = None
         self.loop = None
         self.reader = None
@@ -1688,10 +1689,6 @@ class CyncUserData:
                         ) > 0:
                             room_id = home_id + "-" + str(room["groupID"])
                             room_controller = home_controllers[home_id][0]
-                            # TODO auto-find a better controller?
-                            # available_room_controllers = [(id%1000) + (int(id/1000)*256) for id in room.get('deviceIDArray',[]) if 'switch_controller' in devices[home_devices[home_id][(id%1000)+(int(id/1000)*256)]]]
-                            # if len(available_room_controllers) > 0:
-                            #     room_controller = devices[home_devices[home_id][available_room_controllers[0]]]['switch_controller']
                             for roomdev_id in room.get("deviceIDArray", []):
                                 id = (roomdev_id % 1000) + (
                                     int(roomdev_id / 1000) * 256
