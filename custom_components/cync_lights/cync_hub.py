@@ -432,7 +432,7 @@ class CyncHub:
 
     def disconnect(self):
         self.shutting_down = True
-        for home_controllers in self.home_controllers.values():  # send packets to server to generate data to be read which will initiate shutdown
+        for home_controllers in self.home_controllers.values():
             for controller in home_controllers:
                 seq = self.get_seq_num()
                 state_request = (
@@ -1249,7 +1249,14 @@ class CyncRoom:
 
     def publish_update(self):
         if self._update_callback:
-            self._update_callback()
+            # Ensure this is run in the event loop
+            if self.hub.loop.is_running():
+                self.hub.loop.call_soon_threadsafe(
+                    self.hub.hass.async_create_task, self.async_write_ha_state()
+                )
+            else:
+                # If the loop is not running, just create the task
+                self.hub.hass.async_create_task(self.async_write_ha_state())
 
 
 class CyncSwitch:
@@ -1449,7 +1456,14 @@ class CyncSwitch:
 
     def publish_update(self):
         if self._update_callback:
-            self._update_callback()
+            # Ensure this is run in the event loop
+            if self.hub.loop.is_running():
+                self.hub.loop.call_soon_threadsafe(
+                    self.hub.hass.async_create_task, self.async_write_ha_state()
+                )
+            else:
+                # If the loop is not running, just create the task
+                self.hub.hass.async_create_task(self.async_write_ha_state())
 
 
 class CyncMotionSensor:
