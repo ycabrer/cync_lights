@@ -360,7 +360,6 @@ Capabilities = {
     "MULTIELEMENT": {"67": 2},
 }
 
-
 class CyncHub:
     def __init__(self, hass, user_data, options, remove_options_update_listener):
         self.hass = hass
@@ -421,9 +420,6 @@ class CyncHub:
         self.pending_commands = {}
         [room.initialize() for room in self.cync_rooms.values() if room.is_subgroup]
         [room.initialize() for room in self.cync_rooms.values() if not room.is_subgroup]
-
-    # Other methods remain unchanged
-
 
     def start_tcp_client(self):
         self.thread = threading.Thread(target=self._start_tcp_client, daemon=True)
