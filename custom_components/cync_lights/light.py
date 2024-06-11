@@ -8,6 +8,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.entity import DeviceInfo
 from .const import DOMAIN
 import logging
+import asyncio
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -42,20 +43,25 @@ class CyncRoomEntity(LightEntity):
 
     async def async_added_to_hass(self) -> None:
         """Run when this Entity has been added to HA."""
-        self.room.register(self.async_write_ha_state)
+        self.room.register(self._update_callback)
 
     async def async_will_remove_from_hass(self) -> None:
         """Entity being removed from hass."""
         self.room.reset()
 
+    def _update_callback(self) -> None:
+        """Update callback function."""
+        if self.hass and self.hass.is_running:
+            self.hass.async_create_task(self.async_write_ha_state())
+
     @property
     def device_info(self) -> DeviceInfo:
         """Return device registry information for this entity."""
         return DeviceInfo(
-            identifiers = {(DOMAIN, f"{self.room.parent_room if self.room.is_subgroup else self.room.name} ({self.room.home_name})")},
-            manufacturer = "Cync by Savant",
-            name = f"{self.room.parent_room if self.room.is_subgroup else self.room.name} ({self.room.home_name})",
-            suggested_area = f"{self.room.parent_room if self.room.is_subgroup else self.room.name}",
+            identifiers={(DOMAIN, f"{self.room.parent_room if self.room.is_subgroup else self.room.name} ({self.room.home_name})")},
+            manufacturer="Cync by Savant",
+            name=f"{self.room.parent_room if self.room.is_subgroup else self.room.name} ({self.room.home_name})",
+            suggested_area=f"{self.room.parent_room if self.room.is_subgroup else self.room.name}",
         )
 
     @property
@@ -69,7 +75,7 @@ class CyncRoomEntity(LightEntity):
     @property
     def unique_id(self) -> str:
         """Return Unique ID string."""
-        uid =  'cync_room_' + '-'.join(self.room.switches) + '_' + '-'.join(self.room.subgroups)
+        uid = 'cync_room_' + '-'.join(self.room.switches) + '_' + '-'.join(self.room.subgroups)
         return uid
 
     @property
@@ -85,7 +91,7 @@ class CyncRoomEntity(LightEntity):
     @property
     def brightness(self) -> int | None:
         """Return the brightness of this room between 0..255."""
-        return round(self.room.brightness*255/100)
+        return round(self.room.brightness * 255 / 100)
 
     @property
     def max_mireds(self) -> int:
@@ -100,12 +106,12 @@ class CyncRoomEntity(LightEntity):
     @property
     def color_temp(self) -> int | None:
         """Return the color temperature of this light in mireds for HA."""
-        return self.max_mireds - round((self.max_mireds-self.min_mireds)*self.room.color_temp/100)
+        return self.max_mireds - round((self.max_mireds - self.min_mireds) * self.room.color_temp / 100)
 
     @property
     def rgb_color(self) -> tuple[int, int, int] | None:
         """Return the RGB color tuple of this light switch"""
-        return (self.room.rgb['r'],self.room.rgb['g'],self.room.rgb['b'])
+        return (self.room.rgb['r'], self.room.rgb['g'], self.room.rgb['b'])
 
     @property
     def supported_color_modes(self) -> set[str] | None:
@@ -140,11 +146,12 @@ class CyncRoomEntity(LightEntity):
 
     async def async_turn_on(self, **kwargs: Any) -> None:
         """Turn on the light."""
-        await self.room.turn_on(kwargs.get(ATTR_RGB_COLOR),kwargs.get(ATTR_BRIGHTNESS),kwargs.get(ATTR_COLOR_TEMP))
+        await self.room.turn_on(kwargs.get(ATTR_RGB_COLOR), kwargs.get(ATTR_BRIGHTNESS), kwargs.get(ATTR_COLOR_TEMP))
 
     async def async_turn_off(self, **kwargs: Any) -> None:
         """Turn off the light."""
         await self.room.turn_off()
+
 
 class CyncSwitchEntity(LightEntity):
     """Representation of a Cync Switch Light Entity."""
@@ -157,20 +164,25 @@ class CyncSwitchEntity(LightEntity):
 
     async def async_added_to_hass(self) -> None:
         """Run when this Entity has been added to HA."""
-        self.cync_switch.register(self.async_write_ha_state)
+        self.cync_switch.register(self._update_callback)
 
     async def async_will_remove_from_hass(self) -> None:
         """Entity being removed from hass."""
         self.cync_switch.reset()
 
+    def _update_callback(self) -> None:
+        """Update callback function."""
+        if self.hass and self.hass.is_running:
+            self.hass.async_create_task(self.async_write_ha_state())
+
     @property
     def device_info(self) -> DeviceInfo:
         """Return device registry information for this entity."""
         return DeviceInfo(
-            identifiers = {(DOMAIN, f"{self.cync_switch.room.name} ({self.cync_switch.home_name})")},
-            manufacturer = "Cync by Savant",
-            name = f"{self.cync_switch.room.name} ({self.cync_switch.home_name})",
-            suggested_area = f"{self.cync_switch.room.name}",
+            identifiers={(DOMAIN, f"{self.cync_switch.room.name} ({self.cync_switch.home_name})")},
+            manufacturer="Cync by Savant",
+            name=f"{self.cync_switch.room.name} ({self.cync_switch.home_name})",
+            suggested_area=f"{self.cync_switch.room.name}",
         )
 
     @property
@@ -191,7 +203,7 @@ class CyncSwitchEntity(LightEntity):
     @property
     def brightness(self) -> int | None:
         """Return the brightness of this switch between 0..255."""
-        return round(self.cync_switch.brightness*255/100)
+        return round(self.cync_switch.brightness * 255 / 100)
 
     @property
     def max_mireds(self) -> int:
@@ -206,12 +218,12 @@ class CyncSwitchEntity(LightEntity):
     @property
     def color_temp(self) -> int | None:
         """Return the color temperature of this light in mireds for HA."""
-        return self.max_mireds - round((self.max_mireds-self.min_mireds)*self.cync_switch.color_temp/100)
+        return self.max_mireds - round((self.max_mireds - self.min_mireds) * self.cync_switch.color_temp / 100)
 
     @property
     def rgb_color(self) -> tuple[int, int, int] | None:
         """Return the RGB color tuple of this light switch"""
-        return (self.cync_switch.rgb['r'],self.cync_switch.rgb['g'],self.cync_switch.rgb['b'])
+        return (self.cync_switch.rgb['r'], self.cync_switch.rgb['g'], self.cync_switch.rgb['b'])
 
     @property
     def supported_color_modes(self) -> set[str] | None:
@@ -246,7 +258,7 @@ class CyncSwitchEntity(LightEntity):
 
     async def async_turn_on(self, **kwargs: Any) -> None:
         """Turn on the light."""
-        await self.cync_switch.turn_on(kwargs.get(ATTR_RGB_COLOR),kwargs.get(ATTR_BRIGHTNESS),kwargs.get(ATTR_COLOR_TEMP))
+        await self.cync_switch.turn_on(kwargs.get(ATTR_RGB_COLOR), kwargs.get(ATTR_BRIGHTNESS), kwargs.get(ATTR_COLOR_TEMP))
 
     async def async_turn_off(self, **kwargs: Any) -> None:
         """Turn off the light."""
